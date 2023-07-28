@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from typing import Dict, List, Tuple
 from tqdm.auto import tqdm
-
+from torch.utils.tensorboard import SummaryWriter
 
 def train_step(model: torch.nn.Module,
                data_loader: torch.utils.data.DataLoader,
@@ -75,7 +75,9 @@ def train(model: torch.nn.Module,
           optimizer: torch.optim.Optimizer,
           loss_fn: torch.nn.Module,
           epochs: int,
-          device) -> Dict[str, list]:
+          writer,
+          device: torch.device,
+          progress: bool = True) -> Dict[str, list]:
 
     result = {
         'train_loss': [],
@@ -83,9 +85,9 @@ def train(model: torch.nn.Module,
         'test_loss': [],
         'test_acc': [],
     }
+    print(f'Running on {device} device.....')
 
     for epoch in tqdm(range(epochs)):
-
         train_loss, train_acc = train_step(
             model,
             train_dataloader,
@@ -104,5 +106,39 @@ def train(model: torch.nn.Module,
 
         result['test_loss'].append(float(test_loss))
         result['test_acc'].append(test_acc)
+
+        if progress:
+            print(
+                f"┌Epoch: {epoch+1}\n"
+                f"└──train_loss: {train_loss:.4f} | "
+                f"train_acc: {train_acc:.4f} | "
+                f"test_loss: {test_loss:.4f} | "
+                f"test_acc: {test_acc:.4f}"
+            )
+
+        writer.add_scalars(
+            main_tag='Loss',
+            tag_scalar_dict={
+                'train_loss': train_loss,
+                'test_loss': test_loss
+            },
+            global_step=epoch
+        )
+
+        writer.add_scalars(
+            main_tag='Accuracy',
+            tag_scalar_dict={
+                'train_acc': train_acc,
+                'test_acc': test_acc
+            },
+            global_step=epoch
+        )
+
+        writer.add_graph(
+            model=model,
+            input_to_model=torch.randn(32, 3, 224, 224).to(device)
+        )
+
+    writer.close()
 
     return result
