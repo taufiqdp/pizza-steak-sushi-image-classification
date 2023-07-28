@@ -3,6 +3,8 @@ import torch.nn as nn
 from typing import Dict, List, Tuple
 from tqdm.auto import tqdm
 from torch.utils.tensorboard import SummaryWriter
+from datetime import datetime
+
 
 def train_step(model: torch.nn.Module,
                data_loader: torch.utils.data.DataLoader,
@@ -142,3 +144,17 @@ def train(model: torch.nn.Module,
     writer.close()
 
     return result
+
+
+def create_writer(
+    experiment_name: str,
+    model_name: str,
+    extra: str = None):
+
+    timestamp = datetime.now().strftime('%Y-%m-%d')
+    if extra:
+        log_dir = os.path.join('runs', timestamp, experiment_name, model_name, extra)
+    else:
+        log_dir = os.path.join('runs', timestamp, experiment_name, model_name)
+
+    return SummaryWriter(log_dir)
