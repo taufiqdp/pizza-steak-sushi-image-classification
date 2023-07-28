@@ -1,6 +1,35 @@
 import os
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
+import zipfile
+from pathlib import Path
+import requests
+
+def download_data(
+    source: str,
+    destination: str,
+    remove_source: bool = True) -> Path:
+
+    data_path = Path('data/')
+    img_path = data_path / destination
+
+    if img_path.is_dir():
+        print(f"{img_path} already exists")
+    else:
+        img_path.mkdir(parents=True, exist_ok=True)
+        target_file = Path(source).name
+        with open(data_path / target_file, 'wb') as f:
+            request = requests.get(source)
+            f.write(request.content)
+
+        with zipfile.ZipFile(data_path / target_file, 'r') as zip_ref:
+            zip_ref.extractall(img_path)
+
+        if remove_source:
+            os.remove(data_path / target_file)
+
+    return img_path
+
 
 def create_dataloaders(
     train_dir: str,
