@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 from typing import Dict, List, Tuple
 from tqdm.auto import tqdm
-from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 
 
@@ -119,43 +118,4 @@ def train(model: torch.nn.Module,
                 f"test_acc: {test_acc:.4f}"
             )
 
-        writer.add_scalars(
-            main_tag='Loss',
-            tag_scalar_dict={
-                'train_loss': train_loss,
-                'test_loss': test_loss
-            },
-            global_step=epoch
-        )
-
-        writer.add_scalars(
-            main_tag='Accuracy',
-            tag_scalar_dict={
-                'train_acc': train_acc,
-                'test_acc': test_acc
-            },
-            global_step=epoch
-        )
-
-        writer.add_graph(
-            model=model,
-            input_to_model=torch.randn(32, 3, 224, 224).to(device)
-        )
-
-    writer.close()
-
     return result
-
-
-def create_writer(
-    experiment_name: str,
-    model_name: str,
-    extra: str = None):
-
-    timestamp = datetime.now().strftime('%Y-%m-%d')
-    if extra:
-        log_dir = os.path.join('runs', timestamp, experiment_name, model_name, extra)
-    else:
-        log_dir = os.path.join('runs', timestamp, experiment_name, model_name)
-
-    return SummaryWriter(log_dir)
