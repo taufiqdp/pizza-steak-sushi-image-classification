@@ -77,7 +77,6 @@ def train(model: torch.nn.Module,
           optimizer: torch.optim.Optimizer,
           loss_fn: torch.nn.Module,
           epochs: int,
-          writer,
           device: torch.device,
           progress: bool = True) -> Dict[str, list]:
 
